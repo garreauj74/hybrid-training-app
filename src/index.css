@@ -1,0 +1,11 @@
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { margin: 0; background: #FAFAF7; color: #1A1A1A; font-family: Georgia, 'Times New Roman', serif; }
+input, textarea, button { font-family: inherit; }
+button { cursor: pointer; }
+input:focus, textarea:focus { outline: 2px solid #E8500A; outline-offset: 1px; }
+::-webkit-scrollbar { display: none; }
+scrollbar-width: none;
+
+/* Safe area for iPhone notch */
+.safe-top { padding-top: env(safe-area-inset-top); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
