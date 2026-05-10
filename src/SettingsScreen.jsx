@@ -132,7 +132,7 @@ function Phase2Generator({ startDate, isMobile }) {
     lines.push('═══════════════════════════════════════════════════');
     lines.push('PHASE 1 COMPLETE — BUILD PHASE 2');
     lines.push('═══════════════════════════════════════════════════');
-    lines.push('Athlete: 52yo · 6'1" · 190lbs · Intermediate');
+    lines.push("Athlete: 52yo · 6'1\" · 190lbs · Intermediate");
     lines.push('Goals: Athletic performance + lean muscle');
     lines.push('Equipment: Full home gym — barbell, rack, DB, KB,');
     lines.push('  pull-up bar, box, wallball, jump rope,');
