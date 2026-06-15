@@ -429,20 +429,27 @@ ${summary}`;
 
       {/* ── Sticky header ── */}
       <div style={s.stickyHeader}>
-        {/* Row 1: Week selector + view toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
-          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-            {currentWeekNotes.map((_, i) => (
-              <button key={i} onClick={() => setActiveWeek(i)} style={s.weekBtn(activeWeek === i)}>W{i + 1}</button>
-            ))}
-            <span style={{ margin: '0 4px', color: '#D0CCC4', fontSize: 12 }}>|</span>
+        {/* Row 1: Phase selector + View toggle on same line */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ fontSize: 10, color: '#999', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Phase:</span>
             {[1, 2].map(p => (
-              <button key={p} onClick={() => { setActivePhase(p); setActiveWeek(0); setActiveDay('d1'); }} style={{ ...s.weekBtn(activePhase === p), background: activePhase === p ? '#1A1A1A' : '#fff', border: activePhase === p ? '1px solid #1A1A1A' : '1px solid #D0CCC4' }}>P{p}</button>
+              <button key={p} onClick={() => { setActivePhase(p); setActiveWeek(0); setActiveDay('d1'); }} style={{ ...s.weekBtn(activePhase === p), background: activePhase === p ? '#1A1A1A' : '#fff', border: activePhase === p ? '1px solid #1A1A1A' : '1px solid #D0CCC4', color: activePhase === p ? '#fff' : '#666' }}>P{p}</button>
             ))}
           </div>
           <div style={{ display: 'flex', gap: 5 }}>
             {[['day', 'Day Log'], ['summary', 'Week Summary']].map(([id, label]) => (
               <button key={id} onClick={() => setViewMode(id)} style={s.viewBtn(viewMode === id)}>{isMobile ? (id === 'day' ? 'Day' : 'Week') : label}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Row 2: Week selector -- always visible, never wraps off screen */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 }}>
+          <span style={{ fontSize: 10, color: '#999', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0 }}>Week:</span>
+          <div style={{ display: 'flex', gap: 5, overflowX: 'auto', scrollbarWidth: 'none' }}>
+            {currentWeekNotes.map((_, i) => (
+              <button key={i} onClick={() => setActiveWeek(i)} style={{ ...s.weekBtn(activeWeek === i), flexShrink: 0 }}>W{i + 1}</button>
             ))}
           </div>
         </div>
