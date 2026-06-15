@@ -6,7 +6,7 @@ export const WEEK_NOTES = [
   },
   {
     week: 'Week 2', theme: 'Build confidence',
-    note: 'Add 2.5-5kg to upper body barbell lifts and 5kg to lower body if Week 1 felt controlled. Endurance circuits should feel slightly easier -- that\'s adaptation working.',
+    note: 'Add 2.5-5kg to upper body barbell lifts and 5kg to lower body if Week 1 felt controlled. Endurance circuits should feel slightly easier -- that's adaptation working.',
     focus: ['Small load increases on strength days', 'Push endurance circuit pace slightly', 'Deepen mobility holds'],
   },
   {
