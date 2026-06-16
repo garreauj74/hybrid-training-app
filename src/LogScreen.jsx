@@ -16,7 +16,7 @@ export default function LogScreen({ activeWeek, setActiveWeek, activeDay, setAct
   const dayLogCount = (wk, dayId) => {
     const d = currentDays.find(x => x.id === dayId);
     if (!d) return 0;
-    return d.sections.flatMap((s, si) => s.items.map((_, ii) => logKey(wk, dayId, si, ii)))
+    return d.sections.flatMap((s, si) => s.items.map((_, ii) => logKey(activePhase, wk, dayId, si, ii)))
       .filter(k => { const l = logs[k]; return l && (l.weight || l.reps || l.rpe || l.notes || l.mobilityNotes); }).length;
   };
 
@@ -27,10 +27,10 @@ export default function LogScreen({ activeWeek, setActiveWeek, activeDay, setAct
     lines.push(`Goals: Athletic performance + lean muscle`);
     lines.push('═'.repeat(50));
     currentDays.forEach(d => {
-      const sk = sessionKey(weekIdx, d.id);
+      const sk = sessionKey(activePhase, weekIdx, d.id);
       const sess = getSess(sk);
       const dayHasData = d.sections.some((s, si) =>
-        s.items.some((_, ii) => { const l = logs[logKey(weekIdx, d.id, si, ii)]; return l && (l.weight || l.reps || l.rpe || l.notes || l.mobilityNotes); })
+        s.items.some((_, ii) => { const l = logs[logKey(activePhase, weekIdx, d.id, si, ii)]; return l && (l.weight || l.reps || l.rpe || l.notes || l.mobilityNotes); })
       );
       if (!dayHasData && !sess.rpe && !sess.notes) return;
       lines.push(`\n${d.day} -- ${d.label} [${d.type}]`);
@@ -38,7 +38,7 @@ export default function LogScreen({ activeWeek, setActiveWeek, activeDay, setAct
       if (sess.notes) lines.push(`  Session Notes: ${sess.notes}`);
       d.sections.forEach((section, si) => {
         section.items.forEach((item, ii) => {
-          const l = logs[logKey(weekIdx, d.id, si, ii)];
+          const l = logs[logKey(activePhase, weekIdx, d.id, si, ii)];
           if (!l || !(l.weight || l.reps || l.rpe || l.notes || l.mobilityNotes)) return;
           const prescribed = currentGetWeekSets(item, section.name, weekIdx);
           lines.push(`  ${item.name} [prescribed: ${prescribed} sets × ${item.reps || '--'}]`);
@@ -116,16 +116,11 @@ ${summary}`;
     // Sticky header wrapper
     stickyHeader: {
       position: 'sticky',
-      top: 0,
+      top: 48,
       zIndex: 50,
       background: '#FAFAF7',
-      borderBottom: '1px solid #E0DDD6',
-      paddingTop: 12,
-      paddingBottom: 10,
-      paddingLeft: isMobile ? 12 : 16,
-      paddingRight: isMobile ? 12 : 16,
-      marginLeft: isMobile ? -12 : -16,
-      marginRight: isMobile ? -12 : -16,
+      borderBottom: '2px solid #E0DDD6',
+      padding: '10px 12px 8px',
     },
     weekBtn: (active) => ({
       padding: '5px 10px',
@@ -197,7 +192,7 @@ ${summary}`;
     fieldInput: (hasVal) => ({
       width: '100%',
       padding: '6px 8px',
-      fontSize: 12,
+      fontSize: 16,
       fontFamily: 'monospace',
       border: hasVal ? '1px solid #10B981' : '1px solid #D0CCC4',
       borderRadius: 5,
@@ -208,7 +203,7 @@ ${summary}`;
     mobilityInput: (hasVal) => ({
       width: '100%',
       padding: '6px 8px',
-      fontSize: 12,
+      fontSize: 16,
       fontFamily: 'Georgia, serif',
       border: hasVal ? '1px solid #7C3ACA' : '1px solid #D0CCC4',
       borderRadius: 5,
@@ -270,7 +265,7 @@ ${summary}`;
         const total = d.sections.flatMap(s => s.items).length;
         const logged = dayLogCount(activeWeek, d.id);
         const pct = total > 0 ? Math.round((logged / total) * 100) : 0;
-        const sess = getSess(sessionKey(activeWeek, d.id));
+        const sess = getSess(sessionKey(activePhase, activeWeek, d.id));
         return (
           <div key={d.id} style={{ background: '#fff', borderRadius: 8, border: '1px solid #E0DDD6', padding: '12px 14px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 9, fontFamily: 'monospace', fontWeight: 700, background: tc.bg, color: tc.text, padding: '2px 6px', borderRadius: 3, flexShrink: 0 }}>{d.type}</span>
@@ -340,7 +335,7 @@ ${summary}`;
             <span style={{ fontSize: 11, fontWeight: 700, color: section.color }}>{section.name}</span>
           </div>
           {section.items.map((item, ii) => {
-            const key = logKey(activeWeek, activeDay, si, ii);
+            const key = logKey(activePhase, activeWeek, activeDay, si, ii);
             const log = getLog(key);
             const hasEntry = log.weight || log.reps || log.rpe || log.notes || log.mobilityNotes;
             const adjSets = currentGetWeekSets(item, section.name, activeWeek);
@@ -403,8 +398,8 @@ ${summary}`;
             <input
               type="text"
               placeholder="1-10"
-              value={getSess(sessionKey(activeWeek, activeDay)).rpe}
-              onChange={e => updateSession(sessionKey(activeWeek, activeDay), 'rpe', e.target.value)}
+              value={getSess(sessionKey(activePhase, activeWeek, activeDay)).rpe}
+              onChange={e => updateSession(sessionKey(activePhase, activeWeek, activeDay), 'rpe', e.target.value)}
               style={{ ...s.fieldInput(false), fontSize: 15 }}
             />
           </div>
@@ -413,8 +408,8 @@ ${summary}`;
             <input
               type="text"
               placeholder="Energy, soreness, anything notable..."
-              value={getSess(sessionKey(activeWeek, activeDay)).notes}
-              onChange={e => updateSession(sessionKey(activeWeek, activeDay), 'notes', e.target.value)}
+              value={getSess(sessionKey(activePhase, activeWeek, activeDay)).notes}
+              onChange={e => updateSession(sessionKey(activePhase, activeWeek, activeDay), 'notes', e.target.value)}
               style={{ ...s.fieldInput(false), fontFamily: 'Georgia, serif' }}
             />
           </div>
