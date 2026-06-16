@@ -21,7 +21,7 @@ export default function SettingsScreen({ apiKey, setApiKey, startDate, setStartD
     cardTitle: { fontSize: 15, fontWeight: 700, color: '#1A1A1A', margin: 0 },
     cardBody: { padding: '18px 18px' },
     label: { fontSize: 12, fontFamily: 'monospace', color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: 6 },
-    input: { width: '100%', padding: '10px 12px', fontSize: 14, fontFamily: 'monospace', border: '1px solid #D0CCC4', borderRadius: 8, outline: 'none', background: '#fff', boxSizing: 'border-box' },
+    input: { width: '100%', padding: '10px 12px', fontSize: 16, fontFamily: 'monospace', border: '1px solid #D0CCC4', borderRadius: 8, outline: 'none', background: '#fff', boxSizing: 'border-box' },
     btn: { padding: '11px 24px', background: saved ? '#0A7C4E' : '#E8500A', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontFamily: 'monospace', fontWeight: 700, cursor: 'pointer', transition: 'background 0.2s', letterSpacing: '0.06em', marginTop: 12 },
     infoBox: { padding: '12px 16px', background: '#FFF8F5', borderRadius: 8, border: '1px solid #F5D8CC', fontSize: 13, color: '#666', lineHeight: 1.7, marginTop: 12 },
     row: { display: 'flex', gap: 8, alignItems: 'center' },
@@ -57,7 +57,7 @@ export default function SettingsScreen({ apiKey, setApiKey, startDate, setStartD
             <strong>Where to get your API key:</strong><br />
             1. Go to <strong>console.anthropic.com</strong><br />
             2. Click <strong>API Keys</strong> in the left sidebar<br />
-            3. Click <strong>Create Key</strong> — copy it here<br /><br />
+            3. Click <strong>Create Key</strong> -- copy it here<br /><br />
             Your key is stored only on this device and never sent anywhere except directly to Anthropic when you request a weekly review.
           </div>
         </div>
@@ -112,7 +112,7 @@ export default function SettingsScreen({ apiKey, setApiKey, startDate, setStartD
         <div style={s.cardBody}>
           <div style={{ fontSize: 13, color: '#666', lineHeight: 1.8 }}>
             <strong>Hybrid Training Programme</strong><br />
-            Phase 1 — Foundation · Weeks 1–4<br /><br />
+            Phase 1 -- Foundation · Weeks 1-4<br /><br />
             Built for: 52yo · 6'1" · 190lbs · Intermediate<br />
             Goals: Athletic performance + lean muscle<br /><br />
             <span style={{ color: '#999' }}>Your training data is stored locally on this device. Weekly reviews are sent securely to Anthropic via your API key.</span>
@@ -130,11 +130,11 @@ function Phase2Generator({ startDate, isMobile }) {
   const generateSummary = () => {
     const lines = [];
     lines.push('═══════════════════════════════════════════════════');
-    lines.push('PHASE 1 COMPLETE — BUILD PHASE 2');
+    lines.push('PHASE 1 COMPLETE -- BUILD PHASE 2');
     lines.push('═══════════════════════════════════════════════════');
     lines.push("Athlete: 52yo · 6'1\" · 190lbs · Intermediate");
     lines.push('Goals: Athletic performance + lean muscle');
-    lines.push('Equipment: Full home gym — barbell, rack, DB, KB,');
+    lines.push('Equipment: Full home gym -- barbell, rack, DB, KB,');
     lines.push('  pull-up bar, box, wallball, jump rope,');
     lines.push('  assault bike, rower');
     lines.push('Outside activity: Running/cycling + hiking');
@@ -142,20 +142,20 @@ function Phase2Generator({ startDate, isMobile }) {
     lines.push('Session length: 90 min · Morning training');
     lines.push('');
     lines.push('Phase 1 structure was:');
-    lines.push('  Day 1: Strength — Lower Body (squat/hinge)');
-    lines.push('  Day 2: Strength — Upper Push + Shoulder Stability');
-    lines.push('  Day 3: Muscular Endurance — Full Body Circuit');
-    lines.push('  Day 4: Active Recovery — Mobility & Stability');
-    lines.push('  Day 5: Strength — Upper Pull + Spine Stability');
-    lines.push('  Day 6: Muscular Endurance — Lower Body & Core');
+    lines.push('  Day 1: Strength -- Lower Body (squat/hinge)');
+    lines.push('  Day 2: Strength -- Upper Push + Shoulder Stability');
+    lines.push('  Day 3: Muscular Endurance -- Full Body Circuit');
+    lines.push('  Day 4: Active Recovery -- Mobility & Stability');
+    lines.push('  Day 5: Strength -- Upper Pull + Spine Stability');
+    lines.push('  Day 6: Muscular Endurance -- Lower Body & Core');
     lines.push('  Day 7: Full Rest');
     lines.push('');
     lines.push('Weekly progression:');
-    lines.push('  Week 1–2: Baseline sets, conservative loads');
+    lines.push('  Week 1-2: Baseline sets, conservative loads');
     lines.push('  Week 3: +1 set on all strength/core exercises');
-    lines.push('  Week 4: Mini-deload — sets return to baseline');
+    lines.push('  Week 4: Mini-deload -- sets return to baseline');
     lines.push('');
-    lines.push('Please design Phase 2 (Weeks 5–8) that:');
+    lines.push('Please design Phase 2 (Weeks 5-8) that:');
     lines.push('1. Builds logically on Phase 1 foundation');
     lines.push('2. Increases intensity/complexity appropriately');
     lines.push('3. Maintains the same 7-day structure');
