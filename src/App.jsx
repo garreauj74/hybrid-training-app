@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './index.css';
 import { useIsMobile, useLocalStorage, todayStr, getProgrammePosition } from './hooks.js';
 import { WEEK_NOTES, DAYS, PHASE2_WEEK_NOTES, PHASE2_DAYS, getWeekSets, getPhase2WeekSets } from './data.js';
