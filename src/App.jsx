@@ -44,7 +44,7 @@ export default function App() {
   const updateLog = (key, field, value) => {
     setLogsStored(prev => ({
       ...prev,
-      [key]: { ...(prev[key] || { weight: '', reps: '', rpe: '', notes: '' }), [field]: value },
+      [key]: { ...(prev[key] || { weight: '', reps: '', rpe: '', notes: '', mobilityNotes: '' }), [field]: value },
     }));
   };
 
