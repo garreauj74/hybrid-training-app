@@ -15,9 +15,22 @@ export default function App() {
   const [activeWeek, setActiveWeek] = useLocalStorage('nav-week', 0);
   const [activeDay, setActiveDay] = useLocalStorage('nav-day', 'd1');
 
-  // Training log data -- persisted in localStorage
-  const [logs, setLogsStored] = useLocalStorage('training-logs', {});
-  const [sessions, setSessionsStored] = useLocalStorage('training-sessions', {});
+  // Training log data -- plain useState with useEffect for persistence
+  // Avoids any possible stale closure issues in useLocalStorage
+  const [logs, setLogs] = useState(() => {
+    try { const s = localStorage.getItem('training-logs'); return s ? JSON.parse(s) : {}; } catch { return {}; }
+  });
+  const [sessions, setSessions] = useState(() => {
+    try { const s = localStorage.getItem('training-sessions'); return s ? JSON.parse(s) : {}; } catch { return {}; }
+  });
+
+  // Sync to localStorage whenever logs or sessions change
+  useEffect(() => {
+    try { localStorage.setItem('training-logs', JSON.stringify(logs)); } catch(e) { console.warn(e); }
+  }, [logs]);
+  useEffect(() => {
+    try { localStorage.setItem('training-sessions', JSON.stringify(sessions)); } catch(e) { console.warn(e); }
+  }, [sessions]);
 
   // API key -- persisted in localStorage
   const [apiKey, setApiKey] = useLocalStorage('anthropic-api-key', '');
@@ -42,17 +55,17 @@ export default function App() {
   };
 
   const updateLog = (key, field, value) => {
-    setLogsStored(prev => ({
-      ...prev,
-      [key]: { ...(prev[key] || { weight: '', reps: '', rpe: '', notes: '', mobilityNotes: '' }), [field]: value },
-    }));
+    setLogs(prev => {
+      const existing = prev[key] || { weight: '', reps: '', rpe: '', notes: '', mobilityNotes: '' };
+      return { ...prev, [key]: { ...existing, [field]: value } };
+    });
   };
 
   const updateSession = (key, field, value) => {
-    setSessionsStored(prev => ({
-      ...prev,
-      [key]: { ...(prev[key] || { rpe: '', notes: '' }), [field]: value },
-    }));
+    setSessions(prev => {
+      const existing = prev[key] || { rpe: '', notes: '' };
+      return { ...prev, [key]: { ...existing, [field]: value } };
+    });
   };
 
   const NAV = [
