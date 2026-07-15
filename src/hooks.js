@@ -21,13 +21,25 @@ export function useLocalStorage(key, initialValue) {
   });
 
   const setStoredValue = (newValue) => {
-    try {
-      const valueToStore = newValue instanceof Function ? newValue(value) : newValue;
-      setValue(valueToStore);
-      localStorage.setItem(key, JSON.stringify(valueToStore));
-    } catch (e) {
-      console.warn('localStorage write failed:', e);
-      setValue(newValue instanceof Function ? newValue(value) : newValue);
+    if (newValue instanceof Function) {
+      // Functional update -- use React's own functional setState to avoid stale closure
+      setValue(prev => {
+        const next = newValue(prev);
+        try {
+          localStorage.setItem(key, JSON.stringify(next));
+        } catch (e) {
+          console.warn('localStorage write failed:', e);
+        }
+        return next;
+      });
+    } else {
+      try {
+        setValue(newValue);
+        localStorage.setItem(key, JSON.stringify(newValue));
+      } catch (e) {
+        console.warn('localStorage write failed:', e);
+        setValue(newValue);
+      }
     }
   };
 
@@ -61,7 +73,7 @@ export const getProgrammePosition = (startDateStr) => {
   const daysElapsed = Math.floor((today - start) / (1000 * 60 * 60 * 24));
   if (daysElapsed < 0) return { weekIdx: 0, dayIdx: 0, dayId: 'd1', daysElapsed };
   const weekIdx = Math.min(Math.floor(daysElapsed / 7), 3); // cap at week 4
-  const dayIdx = daysElapsed % 7;                            // 0–6
+  const dayIdx = daysElapsed % 7;                            // 0-6
   const dayId = `d${dayIdx + 1}`;
   return { weekIdx, dayIdx, dayId, daysElapsed };
 };
