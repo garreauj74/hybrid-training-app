@@ -13,12 +13,12 @@ export default function DashboardScreen({ activeWeek, setActiveWeek, activeDay, 
   const dayStats = currentDays.map(d => {
     const totalItems = d.sections.flatMap(s => s.items).length;
     const loggedItems = d.sections.flatMap((s, si) =>
-      s.items.map((_, ii) => logKey(activeWeek, d.id, si, ii))
+      s.items.map((_, ii) => logKey(activePhase, activeWeek, d.id, si, ii))
     ).filter(k => {
       const l = logs[k];
       return l && (l.weight || l.reps || l.rpe || l.notes);
     }).length;
-    const sess = sessions[sessionKey(activeWeek, d.id)] || {};
+    const sess = sessions[sessionKey(activePhase, activeWeek, d.id)] || {};
     const hasSession = sess.rpe || sess.notes;
     return { ...d, totalItems, loggedItems, hasSession, pct: totalItems > 0 ? Math.round((loggedItems / totalItems) * 100) : 0 };
   });
@@ -46,7 +46,7 @@ export default function DashboardScreen({ activeWeek, setActiveWeek, activeDay, 
 
   return (
     <div style={s.page}>
-      <h1 style={s.heading}>Phase 1 -- Foundation</h1>
+      <h1 style={s.heading}>Phase {activePhase} -- {activePhase === 1 ? 'Foundation' : 'Development'}</h1>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
         <p style={{ ...s.sub, margin: 0 }}>Phase {activePhase} · {currentWeekNotes.length === 4 ? 'Weeks ' + (activePhase === 1 ? '1-4' : '5-8') : ''} · Hybrid Cross Training</p>
         <div style={{ display: 'flex', gap: 5, marginLeft: 8 }}>
@@ -118,12 +118,12 @@ export default function DashboardScreen({ activeWeek, setActiveWeek, activeDay, 
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div style={{ flex: 1, background: '#F0EDE6', borderRadius: 20, height: 5, overflow: 'hidden' }}>
-                  <div style={{ width: `${d.pct}%`, height: '100%', background: d.pct === 100 ? '#0A7C4E' : d.pct > 0 ? '#E8500A' : '#D0CCC4', borderRadius: 20, transition: 'width 0.4s' }} />
+                  <div style={{ width: d.pct + '%', height: '100%', background: d.pct === 100 ? '#0A7C4E' : d.pct > 0 ? '#E8500A' : '#D0CCC4', borderRadius: 20, transition: 'width 0.4s' }} />
                 </div>
                 <span style={{ fontSize: 11, color: '#999', fontFamily: 'monospace', flexShrink: 0 }}>{d.pct}%</span>
               </div>
             </div>
-            {d.hasSession && <span style={{ fontSize: 12, color: '#0A7C4E', fontFamily: 'monospace', flexShrink: 0 }}>RPE {sessions[sessionKey(activeWeek, d.id)]?.rpe}</span>}
+            {d.hasSession && <span style={{ fontSize: 12, color: '#0A7C4E', fontFamily: 'monospace', flexShrink: 0 }}>RPE {sessions[sessionKey(activePhase, activeWeek, d.id)]?.rpe}</span>}
             <span style={{ fontSize: 14, color: '#999', flexShrink: 0 }}>›</span>
           </div>
         );
