@@ -20,51 +20,47 @@ export default function ProgrammeScreen({ activeWeek, setActiveWeek, activeDay, 
     weekScroll: { display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', padding: '12px 14px', background: '#fff', borderBottom: '1px solid #E8E4DC' },
     weekBtn: (active) => ({ flex: '0 0 auto', padding: '6px 14px', background: active ? '#E8500A' : '#fff', border: active ? '1px solid #E8500A' : '1px solid #D0CCC4', borderRadius: 6, color: active ? '#fff' : '#555', cursor: 'pointer', fontFamily: 'monospace', fontSize: 12, fontWeight: active ? 700 : 400 }),
     dayTabs: { display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', background: '#fff', borderBottom: '2px solid #E8E4DC' },
-    dayTab: (active, tc) => ({ flex: '1 0 auto', padding: isMobile ? '10px 6px 8px' : '14px 10px 12px', border: 'none', borderBottom: active ? `3px solid ${tc.bg}` : '3px solid transparent', background: active ? '#FAFAF7' : 'transparent', cursor: 'pointer', textAlign: 'center' }),
-    sectionHeader: (open, color) => ({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: open ? '#F5F5F0' : '#FAFAF7', border: `1px solid ${color}44`, borderLeft: `4px solid ${color}`, borderRadius: open ? '8px 8px 0 0' : '8px', cursor: 'pointer' }),
+    dayTab: (active, tc) => ({ flex: '1 0 auto', padding: isMobile ? '10px 6px 8px' : '14px 10px 12px', border: 'none', borderBottom: active ? '3px solid ' + tc.bg : '3px solid transparent', background: active ? '#FAFAF7' : 'transparent', cursor: 'pointer', textAlign: 'center' }),
+    sectionHeader: (open, color) => ({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: open ? '#F5F5F0' : '#FAFAF7', border: '1px solid ' + color + '44', borderLeft: '4px solid ' + color, borderRadius: open ? '8px 8px 0 0' : '8px', cursor: 'pointer' }),
   };
 
   return (
     <div>
-      {/* Phase + Week strip */}
-      <div style={{ display: 'flex', gap: 6, padding: '8px 14px 0', background: '#fff', borderBottom: 'none', alignItems: 'center' }}>
-        <span style={{ fontSize: 10, color: '#999', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.1em', marginRight: 4 }}>Phase:</span>
-        {[1, 2].map(p => (
-          <button key={p} onClick={() => { setActivePhase(p); setActiveWeek(0); setActiveDay('d1'); }} style={{ padding: '4px 10px', background: activePhase === p ? '#1A1A1A' : '#fff', border: activePhase === p ? '1px solid #1A1A1A' : '1px solid #D0CCC4', borderRadius: 5, color: activePhase === p ? '#fff' : '#666', cursor: 'pointer', fontFamily: 'monospace', fontSize: 11, fontWeight: activePhase === p ? 700 : 400 }}>P{p}</button>
-        ))}
-        <span style={{ marginLeft: 8, fontSize: 10, color: '#999', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Week:</span>
-      </div>
-      <div style={s.weekScroll}>
-        {currentWeekNotes.map((w, i) => (
-          <button key={i} onClick={() => setActiveWeek(i)} style={s.weekBtn(activeWeek === i)}>{w.week}</button>
-        ))}
-      </div>
-
-      {/* Week note */}
-      <div style={{ padding: '10px 14px', background: '#FAFAF7', borderBottom: '1px solid #E8E4DC' }}>
-        <div style={{ maxWidth: 980, margin: '0 auto' }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#E8500A' }}>{currentWeekNotes[activeWeek].theme} -- </span>
-          <span style={{ fontSize: 13, color: '#555' }}>{currentWeekNotes[activeWeek].note}</span>
+      {/* Sticky combined header: Phase row + Week row + Day row */}
+      <div style={{ position: 'sticky', top: 48, zIndex: 50, background: '#fff', borderBottom: '2px solid #E8E4DC' }}>
+        {/* Phase row */}
+        <div style={{ display: 'flex', gap: 6, padding: '8px 14px 6px', alignItems: 'center' }}>
+          <span style={{ fontSize: 10, color: '#999', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.1em', marginRight: 4 }}>Phase:</span>
+          {[1, 2].map(p => (
+            <button key={p} onClick={() => { setActivePhase(p); setActiveWeek(0); setActiveDay('d1'); }} style={{ padding: '4px 10px', background: activePhase === p ? '#1A1A1A' : '#fff', border: activePhase === p ? '1px solid #1A1A1A' : '1px solid #D0CCC4', borderRadius: 5, color: activePhase === p ? '#fff' : '#666', cursor: 'pointer', fontFamily: 'monospace', fontSize: 11, fontWeight: activePhase === p ? 700 : 400 }}>P{p}</button>
+          ))}
         </div>
-      </div>
 
-      {/* Day tabs */}
-      <div style={s.dayTabs}>
-        {currentDays.map(d => {
-          const dtc = TYPE_COLORS[d.type];
-          const isActive = activeDay === d.id;
-          return (
-            <button key={d.id} onClick={() => handleDayChange(d.id)} style={s.dayTab(isActive, dtc)}>
-              <div style={{ fontSize: isMobile ? 9 : 11, letterSpacing: '0.1em', fontFamily: 'monospace', textTransform: 'uppercase', fontWeight: 700, color: isActive ? dtc.bg : '#999', marginBottom: 3 }}>{d.day}</div>
-              <span style={{ fontSize: 9, padding: '2px 5px', borderRadius: 3, background: isActive ? dtc.bg : '#E8E4DC', color: isActive ? dtc.text : '#888', fontFamily: 'monospace', fontWeight: 700 }}>{d.type}</span>
-            </button>
-          );
-        })}
+        {/* Week row */}
+        <div style={{ ...s.weekScroll, borderBottom: 'none', paddingTop: 0, paddingBottom: 8 }}>
+          {currentWeekNotes.map((w, i) => (
+            <button key={i} onClick={() => setActiveWeek(i)} style={s.weekBtn(activeWeek === i)}>{w.week}</button>
+          ))}
+        </div>
+
+        {/* Day row */}
+        <div style={{ ...s.dayTabs, borderBottom: 'none' }}>
+          {currentDays.map(d => {
+            const dtc = TYPE_COLORS[d.type];
+            const isActive = activeDay === d.id;
+            return (
+              <button key={d.id} onClick={() => handleDayChange(d.id)} style={s.dayTab(isActive, dtc)}>
+                <div style={{ fontSize: isMobile ? 9 : 11, letterSpacing: '0.1em', fontFamily: 'monospace', textTransform: 'uppercase', fontWeight: 700, color: isActive ? dtc.bg : '#999', marginBottom: 3 }}>{d.day}</div>
+                <span style={{ fontSize: 9, padding: '2px 5px', borderRadius: 3, background: isActive ? dtc.bg : '#E8E4DC', color: isActive ? dtc.text : '#888', fontFamily: 'monospace', fontWeight: 700 }}>{d.type}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Day content */}
       <div style={s.page}>
-        <div style={{ borderLeft: `5px solid ${tc.bg}`, paddingLeft: 16, marginBottom: 20 }}>
+        <div style={{ borderLeft: '5px solid ' + tc.bg, paddingLeft: 16, marginBottom: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
             <span style={{ fontSize: 11, fontFamily: 'monospace', background: tc.bg, color: tc.text, padding: '3px 10px', borderRadius: 4, fontWeight: 700 }}>{day.type}</span>
             {day.totalTime !== '--' && <span style={{ fontSize: 12, color: '#888', fontFamily: 'monospace' }}>⏱ {day.totalTime}</span>}
@@ -90,8 +86,8 @@ export default function ProgrammeScreen({ activeWeek, setActiveWeek, activeDay, 
               </div>
 
               {isOpen && (
-                <div style={{ background: '#fff', border: `1px solid ${section.color}22`, borderTop: 'none', borderRadius: '0 0 8px 8px', overflow: 'hidden' }}>
-                  {section.note && <div style={{ padding: '10px 14px', background: `${section.color}0d`, borderBottom: `1px solid ${section.color}22`, fontSize: 13, color: '#444', fontStyle: 'italic', lineHeight: 1.6 }}>{section.note}</div>}
+                <div style={{ background: '#fff', border: '1px solid ' + section.color + '22', borderTop: 'none', borderRadius: '0 0 8px 8px', overflow: 'hidden' }}>
+                  {section.note && <div style={{ padding: '10px 14px', background: section.color + '0d', borderBottom: '1px solid ' + section.color + '22', fontSize: 13, color: '#444', fontStyle: 'italic', lineHeight: 1.6 }}>{section.note}</div>}
 
                   {/* Header row */}
                   <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 44px 60px' : hasStab ? '2fr 2.5fr 55px 65px 1.4fr' : '2fr 2.5fr 55px 65px', padding: '8px 14px', borderBottom: '2px solid #F0EDE6', gap: 8, background: '#FAFAF7' }}>
@@ -133,23 +129,6 @@ export default function ProgrammeScreen({ activeWeek, setActiveWeek, activeDay, 
           );
         })}
 
-        {/* Phase principles */}
-        <div style={{ marginTop: 28, padding: '18px 20px', background: '#F5F5F0', borderRadius: 10, border: '1px solid #E0DDD6', borderLeft: '5px solid #E8500A' }}>
-          <div style={{ fontSize: 11, letterSpacing: '0.2em', color: '#999', fontFamily: 'monospace', textTransform: 'uppercase', marginBottom: 12, fontWeight: 700 }}>Phase 1 Principles</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
-            {[
-              ['Progressive Overload', 'Add 2.5-5kg when all reps complete with clean form. Never chase load at cost of technique.'],
-              ['RPE Targets', 'Strength days: 7-8. Endurance circuits: 6-7. Never redline in Phase 1.'],
-              ['Mobility First', 'Every warm-up and cool-down is non-negotiable.'],
-              ['Stability as Active Rest', 'Stability drills between sets are programming, not filler.'],
-            ].map(([t, d]) => (
-              <div key={t}>
-                <div style={{ fontSize: 13, color: '#E8500A', fontWeight: 700, marginBottom: 4 }}>{t}</div>
-                <div style={{ fontSize: 12, color: '#555', lineHeight: 1.7 }}>{d}</div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );
