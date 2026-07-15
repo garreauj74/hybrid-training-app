@@ -6,7 +6,7 @@ export const WEEK_NOTES = [
   },
   {
     week: 'Week 2', theme: 'Build confidence',
-    note: 'Add 2.5-5kg to upper body barbell lifts and 5kg to lower body if Week 1 felt controlled. Endurance circuits should feel slightly easier -- thats adaptation working.',
+    note: 'Add 2.5-5kg to upper body barbell lifts and 5kg to lower body if Week 1 felt controlled. Endurance circuits should feel slightly easier -- that\'s adaptation working.',
     focus: ['Small load increases on strength days', 'Push endurance circuit pace slightly', 'Deepen mobility holds'],
   },
   {
@@ -278,8 +278,8 @@ export const getWeekSets = (item, sectionName, weekIdx) => {
   return String(base);
 };
 
-export const logKey = (w, d, si, ii) => `w${w}-${d}-s${si}-i${ii}`;
-export const sessionKey = (w, d) => `session-w${w}-${d}`;
+export const logKey = (p, w, d, si, ii) => 'p' + p + '-w' + w + '-' + d + '-s' + si + '-i' + ii;
+export const sessionKey = (p, w, d) => 'p' + p + '-session-w' + w + '-' + d;
 
 // ─── PHASE 2 DATA ─────────────────────────────────────────────────────────────
 // Development Block -- Weeks 5-8
