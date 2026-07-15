@@ -315,7 +315,6 @@ export default function LogScreen({
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6 }}>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A' }}>{item.name}</div>
-                    <div style={{ fontSize: 9, color: '#E8500A', fontFamily: 'monospace' }}>KEY: {itemKey}</div>
                     <div style={{ fontSize: 10, color: '#888', fontFamily: 'monospace', marginTop: 1 }}>
                       {adjSets && adjSets !== '--' ? adjSets + ' sets' : ''}{item.reps ? ' x ' + item.reps : ''}{item.rest ? ' · Rest ' + item.rest : ''}
                     </div>
