@@ -20,24 +20,15 @@ export function useLocalStorage(key, initialValue) {
     }
   });
 
-  // Keep a ref to the latest value so setStoredValue never has a stale closure
   const valueRef = useRef(value);
-  useEffect(() => {
-    valueRef.current = value;
-  }, [value]);
+  useEffect(() => { valueRef.current = value; }, [value]);
 
-  // Persist to localStorage whenever value changes
   useEffect(() => {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch (e) {
-      console.warn('localStorage write failed:', e);
-    }
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { console.warn(e); }
   }, [key, value]);
 
   const setStoredValue = (newValue) => {
     if (newValue instanceof Function) {
-      // Use the ref to get latest value - avoids stale closure entirely
       const next = newValue(valueRef.current);
       valueRef.current = next;
       setValue(next);
@@ -50,25 +41,11 @@ export function useLocalStorage(key, initialValue) {
   return [value, setStoredValue];
 }
 
-// Format a Date object as YYYY-MM-DD string
 export const dateToStr = (d) => d.toISOString().slice(0, 10);
-
-// Parse a YYYY-MM-DD string to a Date object
-export const strToDate = (s) => {
-  const [y, m, d] = s.split('-').map(Number);
-  return new Date(y, m - 1, d);
-};
-
-// Get today as YYYY-MM-DD
+export const strToDate = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
 export const todayStr = () => dateToStr(new Date());
+export const formatDate = (s) => strToDate(s).toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
-// Format a date string nicely
-export const formatDate = (s) => {
-  const d = strToDate(s);
-  return d.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-};
-
-// Given a programme start date string and today, return position info
 export const getProgrammePosition = (startDateStr) => {
   const start = strToDate(startDateStr);
   const today = new Date();
