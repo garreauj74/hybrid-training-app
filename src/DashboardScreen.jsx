@@ -1,130 +1,96 @@
 import React from 'react';
-import { DAYS, WEEK_NOTES, TYPE_COLORS, logKey, sessionKey } from './data.js';
+import { DAYS, WEEK_NOTES, TYPE_COLORS, logKey, sessionKey, WOD_ROTATION, WOD_CATEGORIES } from './data.js';
 import { formatDate, todayStr, getProgrammePosition } from './hooks.js';
 
-export default function DashboardScreen({ activeWeek, setActiveWeek, activeDay, setActiveDay, logs, sessions, setTab, isMobile, startDate, activePhase, setActivePhase, currentWeekNotes, currentDays, currentGetWeekSets }) {
-  const weekNote = currentWeekNotes[activeWeek];
-
+export default function DashboardScreen({ activeWeek, setActiveWeek, activeDay, setActiveDay, logs, sessions, setTab, isMobile, startDate, getAssignedWOD }) {
   const today = todayStr();
   const pos = startDate ? getProgrammePosition(startDate) : null;
   const todayDayId = pos ? pos.dayId : null;
   const isOnSchedule = pos && pos.weekIdx === activeWeek;
+  const weekNote = WEEK_NOTES[activeWeek];
 
-  const dayStats = currentDays.map(d => {
-    const totalItems = d.sections.flatMap(s => s.items).length;
-    const loggedItems = d.sections.flatMap((s, si) =>
-      s.items.map((_, ii) => logKey(activePhase, activeWeek, d.id, si, ii))
-    ).filter(k => {
-      const l = logs[k];
-      return l && (l.weight || l.reps || l.rpe || l.notes);
-    }).length;
-    const sess = sessions[sessionKey(activePhase, activeWeek, d.id)] || {};
-    const hasSession = sess.rpe || sess.notes;
-    return { ...d, totalItems, loggedItems, hasSession, pct: totalItems > 0 ? Math.round((loggedItems / totalItems) * 100) : 0 };
+  const dayStats = DAYS.map(d => {
+    const total = d.sections.reduce((n, s) => n + s.items.length, 0);
+    let logged = 0;
+    d.sections.forEach((s, si) => {
+      s.items.forEach((_, ii) => {
+        const k = logKey(1, activeWeek, d.id, si, ii);
+        const l = logs[k];
+        if (l && (l.weight || l.reps || l.rpe || l.notes || l.mobilityNotes)) logged++;
+      });
+    });
+    const sess = sessions[sessionKey(1, activeWeek, d.id)] || {};
+    const pct = total > 0 ? Math.round((logged / total) * 100) : 0;
+    const assignedWOD = (d.type === 'CONDITIONING') ? getAssignedWOD(activeWeek, d.id) : null;
+    return { ...d, total, logged, pct, sessRpe: sess.rpe, assignedWOD };
   });
 
-  const totalLogged = dayStats.filter(d => d.loggedItems > 0).length;
-  const totalComplete = dayStats.filter(d => d.pct === 100).length;
+  const started = dayStats.filter(d => d.logged > 0).length;
+  const complete = dayStats.filter(d => d.pct === 100).length;
 
   const s = {
     page: { maxWidth: 680, margin: '0 auto', padding: isMobile ? '16px 14px 80px' : '24px 20px 80px' },
-    heading: { fontSize: isMobile ? 18 : 22, fontWeight: 700, color: '#1A1A1A', margin: '0 0 2px' },
-    sub: { fontSize: 13, color: '#888', margin: '0 0 20px', fontFamily: 'monospace' },
-    weekRow: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' },
-    weekBtn: (active) => ({ padding: '7px 14px', background: active ? '#E8500A' : '#fff', border: active ? '1px solid #E8500A' : '1px solid #D0CCC4', borderRadius: 6, color: active ? '#fff' : '#555', cursor: 'pointer', fontFamily: 'monospace', fontSize: 12, fontWeight: active ? 700 : 400 }),
-    statsRow: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 },
-    statCard: { background: '#fff', borderRadius: 10, border: '1px solid #E0DDD6', padding: '14px 12px', textAlign: 'center' },
-    statNum: { fontSize: 28, fontWeight: 700, color: '#E8500A', fontFamily: 'monospace', lineHeight: 1 },
-    statLabel: { fontSize: 11, color: '#999', fontFamily: 'monospace', marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.08em' },
-    weekCard: { background: '#FFF8F5', borderRadius: 10, border: '1px solid #F5D8CC', borderLeft: '4px solid #E8500A', padding: '14px 16px', marginBottom: 20 },
-    weekTheme: { fontSize: 15, fontWeight: 700, color: '#E8500A', marginBottom: 4 },
-    weekNote: { fontSize: 13, color: '#555', lineHeight: 1.7, margin: 0 },
-    sectionTitle: { fontSize: 12, fontFamily: 'monospace', color: '#999', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 10, fontWeight: 700 },
-    dayCard: { background: '#fff', borderRadius: 10, border: '1px solid #E0DDD6', padding: '14px 16px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', transition: 'border-color 0.15s' },
-    dayCardActive: { background: '#fff', borderRadius: 10, border: '1px solid #E8500A', padding: '14px 16px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' },
+    card: { background: '#fff', borderRadius: 10, border: '1px solid #E0DDD6', padding: '12px 14px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' },
+    statCard: { background: '#fff', borderRadius: 10, border: '1px solid #E0DDD6', padding: '12px 10px', textAlign: 'center' },
   };
 
   return (
     <div style={s.page}>
-      <h1 style={s.heading}>Phase {activePhase} -- {activePhase === 1 ? 'Foundation' : 'Development'}</h1>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-        <p style={{ ...s.sub, margin: 0 }}>Phase {activePhase} · {currentWeekNotes.length === 4 ? 'Weeks ' + (activePhase === 1 ? '1-4' : '5-8') : ''} · Hybrid Cross Training</p>
-        <div style={{ display: 'flex', gap: 5, marginLeft: 8 }}>
-          {[1, 2].map(p => (
-            <button key={p} onClick={() => { setActivePhase(p); setActiveWeek(0); setActiveDay('d1'); }} style={{ padding: '3px 9px', background: activePhase === p ? '#E8500A' : '#fff', border: activePhase === p ? '1px solid #E8500A' : '1px solid #D0CCC4', borderRadius: 5, color: activePhase === p ? '#fff' : '#666', cursor: 'pointer', fontFamily: 'monospace', fontSize: 10, fontWeight: activePhase === p ? 700 : 400 }}>P{p}</button>
-          ))}
-        </div>
-      </div>
+      <div style={{ fontSize: 11, letterSpacing: '0.2em', color: '#999', fontFamily: 'monospace', textTransform: 'uppercase', marginBottom: 4 }}>Phase 1 -- Strength and Conditioning</div>
+      <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 700, color: '#1A1A1A', margin: '0 0 8px', letterSpacing: '-0.02em' }}>Dashboard</h1>
 
-      {/* Today's date and programme position */}
       {startDate && (
-        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:16, flexWrap:'wrap' }}>
-          <div style={{ fontSize:12, color:'#888', fontFamily:'monospace' }}>📅 {formatDate(today)}</div>
-          {pos && (
-            <div style={{ fontSize:12, fontFamily:'monospace', background:'#E8500A', color:'#fff', padding:'2px 10px', borderRadius:20, fontWeight:700 }}>
-              Week {pos.weekIdx + 1} · Day {pos.dayIdx + 1}
-            </div>
-          )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+          <div style={{ fontSize: 12, color: '#888', fontFamily: 'monospace' }}>📅 {formatDate(today)}</div>
+          {pos && <div style={{ fontSize: 12, fontFamily: 'monospace', background: '#E8500A', color: '#fff', padding: '2px 10px', borderRadius: 20, fontWeight: 700 }}>Week {pos.weekIdx + 1} · Day {pos.dayIdx + 1}</div>}
         </div>
       )}
 
       {/* Week selector */}
-      <div style={s.weekRow}>
-        {currentWeekNotes.map((w, i) => (
-          <button key={i} onClick={() => setActiveWeek(i)} style={s.weekBtn(activeWeek === i)}>{w.week}</button>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
+        {WEEK_NOTES.map((w, i) => (
+          <button key={i} onClick={() => setActiveWeek(i)} style={{ padding: '6px 12px', background: activeWeek === i ? '#E8500A' : '#fff', border: activeWeek === i ? '1px solid #E8500A' : '1px solid #D0CCC4', borderRadius: 6, color: activeWeek === i ? '#fff' : '#555', cursor: 'pointer', fontFamily: 'monospace', fontSize: 12, fontWeight: activeWeek === i ? 700 : 400 }}>{w.week}</button>
         ))}
       </div>
 
       {/* Stats */}
-      <div style={s.statsRow}>
-        <div style={s.statCard}>
-          <div style={s.statNum}>{totalLogged}</div>
-          <div style={s.statLabel}>Days Started</div>
-        </div>
-        <div style={s.statCard}>
-          <div style={s.statNum}>{totalComplete}</div>
-          <div style={s.statLabel}>Days Complete</div>
-        </div>
-        <div style={{ ...s.statCard }}>
-          <div style={{ ...s.statNum, color: '#0A7C4E' }}>{7 - totalLogged}</div>
-          <div style={s.statLabel}>Days Remaining</div>
-        </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}>
+        {[['Sessions Started', started, '#E8500A'], ['Complete', complete, '#0A7C4E'], ['Remaining', 7 - started, '#1D5FA8']].map(([label, val, color]) => (
+          <div key={label} style={s.statCard}>
+            <div style={{ fontSize: 26, fontWeight: 700, color, fontFamily: 'monospace', lineHeight: 1 }}>{val}</div>
+            <div style={{ fontSize: 10, color: '#999', fontFamily: 'monospace', marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</div>
+          </div>
+        ))}
       </div>
 
       {/* Week note */}
-      <div style={s.weekCard}>
-        <div style={s.weekTheme}>{weekNote.theme}</div>
-        <p style={s.weekNote}>{weekNote.note}</p>
+      <div style={{ padding: '12px 14px', background: '#FFF8F5', borderRadius: 10, border: '1px solid #F5D8CC', borderLeft: '4px solid #E8500A', marginBottom: 16 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#E8500A', marginBottom: 4 }}>{weekNote.theme}</div>
+        <p style={{ fontSize: 12, color: '#555', lineHeight: 1.7, margin: 0 }}>{weekNote.note}</p>
       </div>
 
       {/* Day list */}
-      <div style={s.sectionTitle}>This Week's Sessions</div>
+      <div style={{ fontSize: 11, letterSpacing: '0.15em', color: '#999', fontFamily: 'monospace', textTransform: 'uppercase', marginBottom: 8 }}>This Week</div>
       {dayStats.map(d => {
         const tc = TYPE_COLORS[d.type];
-        const isActive = activeDay === d.id;
+        const isToday = d.id === todayDayId && isOnSchedule;
         return (
-          <div
-            key={d.id}
-            style={isActive ? s.dayCardActive : s.dayCard}
-            onClick={() => { setActiveDay(d.id); setTab('programme'); }}
-          >
-            <span style={{ fontSize: 10, fontFamily: 'monospace', fontWeight: 700, background: tc.bg, color: tc.text, padding: '3px 8px', borderRadius: 3, flexShrink: 0 }}>{d.type}</span>
+          <div key={d.id} onClick={() => { setActiveDay(d.id); setTab(d.type === 'CONDITIONING' ? 'wods' : 'programme'); }} style={{ ...s.card, background: isToday ? '#FFF8F5' : '#fff', border: isToday ? '2px solid #E8500A' : '1px solid #E0DDD6' }}>
+            <span style={{ fontSize: 9, fontFamily: 'monospace', fontWeight: 700, background: tc.bg, color: tc.text, padding: '2px 7px', borderRadius: 3, flexShrink: 0 }}>{d.type}</span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A', marginBottom: 3, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A', marginBottom: 3, display: 'flex', alignItems: 'center', gap: 6 }}>
                 {d.day} -- {d.label}
-                {d.id === todayDayId && isOnSchedule && (
-                  <span style={{ fontSize: 9, background: '#E8500A', color: '#fff', padding: '1px 6px', borderRadius: 20, fontWeight: 700, letterSpacing: '0.08em' }}>TODAY</span>
-                )}
+                {isToday && <span style={{ fontSize: 9, background: '#E8500A', color: '#fff', padding: '1px 6px', borderRadius: 20, fontWeight: 700 }}>TODAY</span>}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ flex: 1, background: '#F0EDE6', borderRadius: 20, height: 5, overflow: 'hidden' }}>
-                  <div style={{ width: d.pct + '%', height: '100%', background: d.pct === 100 ? '#0A7C4E' : d.pct > 0 ? '#E8500A' : '#D0CCC4', borderRadius: 20, transition: 'width 0.4s' }} />
-                </div>
-                <span style={{ fontSize: 11, color: '#999', fontFamily: 'monospace', flexShrink: 0 }}>{d.pct}%</span>
+              {d.type === 'CONDITIONING' && d.assignedWOD && (
+                <div style={{ fontSize: 10, color: '#B5197A', fontFamily: 'monospace', marginBottom: 3 }}>WOD: {d.assignedWOD.name} ({d.assignedWOD.duration})</div>
+              )}
+              <div style={{ background: '#F0EDE6', borderRadius: 20, height: 4, overflow: 'hidden' }}>
+                <div style={{ width: d.pct + '%', height: '100%', background: d.pct === 100 ? '#0A7C4E' : d.pct > 0 ? '#E8500A' : '#D0CCC4', borderRadius: 20, transition: 'width 0.4s' }} />
               </div>
             </div>
-            {d.hasSession && <span style={{ fontSize: 12, color: '#0A7C4E', fontFamily: 'monospace', flexShrink: 0 }}>RPE {sessions[sessionKey(activePhase, activeWeek, d.id)]?.rpe}</span>}
-            <span style={{ fontSize: 14, color: '#999', flexShrink: 0 }}>›</span>
+            {d.sessRpe && <span style={{ fontSize: 11, color: '#0A7C4E', fontFamily: 'monospace', flexShrink: 0 }}>RPE {d.sessRpe}</span>}
+            <span style={{ fontSize: 14, color: '#CCC', flexShrink: 0 }}>›</span>
           </div>
         );
       })}
