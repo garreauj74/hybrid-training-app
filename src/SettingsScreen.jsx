@@ -1,124 +1,121 @@
 import React, { useState } from 'react';
-import { DEFAULT_LOADS } from './data.js';
+import { LIFTS, DEFAULT_LOADS, PHASE_NUM, PHASE_NAME } from './data.js';
 import { formatDate } from './hooks.js';
+import { F, C, MONO, ScrollArea } from './ui.jsx';
 
-export default function SettingsScreen({ apiKey, setApiKey, startDate, setStartDate, syncFromDate, onChangeDateRequest, customLoads, setCustomLoads, isMobile }) {
+export default function SettingsScreen({ apiKey, setApiKey, startDate, onChangeDateRequest, customLoads, setCustomLoads, isMobile }) {
   const [inputKey, setInputKey] = useState(apiKey || '');
   const [showKey, setShowKey] = useState(false);
   const [keySaved, setKeySaved] = useState(false);
-  const [editLoads, setEditLoads] = useState(false);
-  const [loadValues, setLoadValues] = useState({ ...DEFAULT_LOADS, ...customLoads });
-  const [loadsSaved, setLoadsSaved] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState({});
+  const [saved, setSaved] = useState(false);
 
-  const handleSaveKey = () => { setApiKey(inputKey.trim()); setKeySaved(true); setTimeout(() => setKeySaved(false), 2000); };
-  const handleSaveLoads = () => { setCustomLoads(loadValues); setLoadsSaved(true); setEditLoads(false); setTimeout(() => setLoadsSaved(false), 2000); };
+  const loads = Object.assign({}, DEFAULT_LOADS, customLoads);
 
-  const s = {
-    page: { maxWidth: 680, margin: '0 auto', padding: isMobile ? '20px 16px 80px' : '28px 24px 80px' },
-    card: { background: '#fff', borderRadius: 12, border: '1px solid #E0DDD6', marginBottom: 16, overflow: 'hidden' },
-    cardHeader: { padding: '12px 16px', background: '#F5F5F0', borderBottom: '1px solid #F0EDE6' },
-    cardTitle: { fontSize: 14, fontWeight: 700, margin: 0 },
-    cardBody: { padding: '16px' },
-    label: { fontSize: 10, color: '#999', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: 5 },
-    input: { width: '100%', padding: '10px 12px', fontSize: 16, fontFamily: 'monospace', border: '1px solid #D0CCC4', borderRadius: 8, outline: 'none', background: '#fff', boxSizing: 'border-box' },
-    btn: (color) => ({ padding: '10px 20px', background: color, color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontFamily: 'monospace', fontWeight: 700, cursor: 'pointer', marginTop: 10 }),
-    infoBox: { padding: '10px 14px', background: '#FFF8F5', borderRadius: 8, border: '1px solid #F5D8CC', fontSize: 12, color: '#666', lineHeight: 1.7, marginTop: 10 },
+  const startEdit = () => {
+    const d = {};
+    LIFTS.forEach((l) => { d[l.key] = String(loads[l.key]); });
+    setDraft(d);
+    setEditing(true);
+  };
+  const saveLoads = () => {
+    const out = {};
+    LIFTS.forEach((l) => {
+      const n = parseFloat(draft[l.key]);
+      out[l.key] = isNaN(n) ? DEFAULT_LOADS[l.key] : n;
+    });
+    setCustomLoads(out);
+    setEditing(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   };
 
-  const loads = { ...DEFAULT_LOADS, ...customLoads };
+  const card = { background: '#fff', borderRadius: 12, border: '1px solid ' + C.line, marginBottom: 14, overflow: 'hidden' };
+  const head = { padding: '11px 16px', background: '#F5F5F0', borderBottom: '1px solid #F0EDE6', fontSize: F(14), fontWeight: 700 };
+  const body = { padding: 16 };
+  const btn = (color) => ({ padding: '10px 18px', background: color, color: '#fff', border: 'none', borderRadius: 8, fontSize: F(13), fontFamily: MONO, fontWeight: 700, marginTop: 10 });
 
   return (
-    <div style={s.page}>
-      <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 700, margin: '0 0 4px' }}>Settings</h1>
-      <p style={{ fontSize: 13, color: '#888', fontStyle: 'italic', margin: '0 0 24px' }}>Configure your app</p>
+    <ScrollArea>
+      <div style={{ maxWidth: 680, margin: '0 auto', padding: isMobile ? '18px 14px 24px' : '26px 22px 24px' }}>
+        <h1 style={{ fontSize: F(isMobile ? 20 : 24), fontWeight: 700, margin: '0 0 18px' }}>Settings</h1>
 
-      {/* API Key */}
-      <div style={s.card}>
-        <div style={s.cardHeader}><p style={s.cardTitle}>🔑 Anthropic API Key</p></div>
-        <div style={s.cardBody}>
-          <label style={s.label}>API Key</label>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <input type={showKey ? 'text' : 'password'} placeholder="sk-ant-api03-..." value={inputKey} onChange={e => setInputKey(e.target.value)} style={{ ...s.input, flex: 1 }} />
-            <button onClick={() => setShowKey(v => !v)} style={{ padding: '10px 12px', background: '#F5F5F0', border: '1px solid #D0CCC4', borderRadius: 8, fontSize: 12, color: '#666', cursor: 'pointer', fontFamily: 'monospace', flexShrink: 0 }}>{showKey ? 'Hide' : 'Show'}</button>
-          </div>
-          <button onClick={handleSaveKey} style={s.btn(keySaved ? '#0A7C4E' : '#E8500A')}>{keySaved ? '✓ Saved' : 'Save Key'}</button>
-          <div style={s.infoBox}>Go to <strong>console.anthropic.com</strong> → API Keys → Create Key. Your key is stored only on this device.</div>
-        </div>
-      </div>
-
-      {/* Starting Loads */}
-      <div style={s.card}>
-        <div style={s.cardHeader}><p style={s.cardTitle}>🏋️ Starting Loads</p></div>
-        <div style={s.cardBody}>
-          <div style={{ fontSize: 12, color: '#666', marginBottom: 12, lineHeight: 1.6 }}>
-            These are your Week 1 starting loads. Edit them if you want to adjust from the defaults. The programme tab shows these loads next to each exercise.
-          </div>
-          {!editLoads ? (
-            <div>
-              {Object.entries(loads).map(([name, weight]) => (
-                <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #F0EDE6' }}>
-                  <div style={{ fontSize: 13, color: '#333' }}>{name}</div>
-                  <div style={{ fontSize: 13, fontFamily: 'monospace', fontWeight: 700, color: '#E8500A' }}>{weight === 0 ? 'BW' : weight + ' lbs'}</div>
-                </div>
-              ))}
-              <button onClick={() => setEditLoads(true)} style={s.btn('#1A1A1A')}>Edit Loads</button>
+        <div style={card}>
+          <div style={head}>Starting Loads (lb)</div>
+          <div style={body}>
+            <div style={{ fontSize: F(12), color: '#666', marginBottom: 10, lineHeight: 1.6 }}>
+              These are your Week 1 loads. Later weeks add to them automatically, and the Programme and Log tabs update as soon as you save. Loads marked estimate were not in your Phase 1 logs, so check them.
             </div>
-          ) : (
-            <div>
-              {Object.entries(loadValues).map(([name, weight]) => (
-                <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <label style={{ fontSize: 12, color: '#333', flex: 1 }}>{name}</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <input type="number" value={weight} onChange={e => setLoadValues(prev => ({ ...prev, [name]: parseInt(e.target.value) || 0 }))} style={{ width: 80, padding: '7px 10px', fontSize: 14, fontFamily: 'monospace', border: '1px solid #D0CCC4', borderRadius: 6, outline: 'none', textAlign: 'center' }} />
-                    <span style={{ fontSize: 12, color: '#999', fontFamily: 'monospace' }}>lbs</span>
+            {!editing ? (
+              <div>
+                {LIFTS.map((l) => (
+                  <div key={l.key} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid #F0EDE6' }}>
+                    <div style={{ fontSize: F(13) }}>{l.key}{l.est ? <span style={{ color: '#B45309', fontSize: F(10), fontFamily: MONO }}> estimate</span> : null}</div>
+                    <div data-testid={'load-' + l.key} style={{ fontSize: F(13), fontFamily: MONO, fontWeight: 700, color: C.orange }}>{loads[l.key]} lb</div>
                   </div>
-                </div>
-              ))}
-              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                <button onClick={handleSaveLoads} style={s.btn(loadsSaved ? '#0A7C4E' : '#E8500A')}>{loadsSaved ? '✓ Saved' : 'Save Loads'}</button>
-                <button onClick={() => { setLoadValues({ ...DEFAULT_LOADS, ...customLoads }); setEditLoads(false); }} style={{ ...s.btn('#666'), marginTop: 10 }}>Cancel</button>
+                ))}
+                <button data-testid="edit-loads" onClick={startEdit} style={btn(C.ink)}>{saved ? 'Saved' : 'Edit Loads'}</button>
               </div>
+            ) : (
+              <div>
+                {LIFTS.map((l) => (
+                  <div key={l.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <label style={{ fontSize: F(12), flex: 1 }}>{l.key}</label>
+                    <input data-testid={'edit-' + l.key} type="text" inputMode="decimal" value={draft[l.key]} onChange={(e) => setDraft(Object.assign({}, draft, { [l.key]: e.target.value }))}
+                      style={{ width: 84, padding: '7px 10px', fontSize: F(16), fontFamily: MONO, border: '1px solid #D0CCC4', borderRadius: 6, textAlign: 'center' }} />
+                  </div>
+                ))}
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button data-testid="save-loads" onClick={saveLoads} style={btn(C.orange)}>Save Loads</button>
+                  <button onClick={() => setEditing(false)} style={btn('#777')}>Cancel</button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div style={card}>
+          <div style={head}>Anthropic API Key</div>
+          <div style={body}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input type={showKey ? 'text' : 'password'} placeholder="sk-ant-api03-..." value={inputKey} onChange={(e) => setInputKey(e.target.value)}
+                style={{ flex: 1, padding: '10px 12px', fontSize: F(16), fontFamily: MONO, border: '1px solid #D0CCC4', borderRadius: 8 }} />
+              <button onClick={() => setShowKey((v) => !v)} style={{ padding: '10px 12px', background: '#F5F5F0', border: '1px solid #D0CCC4', borderRadius: 8, fontSize: F(12), fontFamily: MONO }}>{showKey ? 'Hide' : 'Show'}</button>
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* Programme Schedule */}
-      <div style={s.card}>
-        <div style={s.cardHeader}><p style={s.cardTitle}>📅 Programme Schedule</p></div>
-        <div style={s.cardBody}>
-          <div style={{ fontSize: 13, color: '#555', lineHeight: 1.7, marginBottom: 12 }}>
-            <strong>Start Date:</strong> {startDate ? formatDate(startDate) : 'Not set'}<br />
-            The app uses this to track your current week and day automatically.
+            <button onClick={() => { setApiKey(inputKey.trim()); setKeySaved(true); setTimeout(() => setKeySaved(false), 2000); }} style={btn(keySaved ? C.green : C.orange)}>{keySaved ? 'Saved' : 'Save Key'}</button>
+            <div style={{ marginTop: 10, fontSize: F(12), color: '#666', lineHeight: 1.6 }}>Used only for the Weekly Review button. Stored on this device.</div>
           </div>
-          <button onClick={onChangeDateRequest} style={s.btn('#1A1A1A')}>Change Start Date</button>
         </div>
-      </div>
 
-      {/* Build Next Phase */}
-      <div style={s.card}>
-        <div style={s.cardHeader}><p style={s.cardTitle}>🚀 Build Next Phase</p></div>
-        <div style={s.cardBody}>
-          <div style={{ fontSize: 13, color: '#555', lineHeight: 1.7, marginBottom: 12 }}>When you complete Phase 1, use this to generate a summary for Claude. Paste it along with your Week 4 log review and Claude will design Phase 2 based on your actual performance.</div>
-          <PhaseBuilder />
+        <div style={card}>
+          <div style={head}>Programme Schedule</div>
+          <div style={body}>
+            <div style={{ fontSize: F(13), color: '#555', lineHeight: 1.7 }}><strong>Start date:</strong> {startDate ? formatDate(startDate) : 'Not set'}</div>
+            <button onClick={onChangeDateRequest} style={btn(C.ink)}>Change Start Date</button>
+          </div>
         </div>
-      </div>
 
-      {/* About */}
-      <div style={s.card}>
-        <div style={s.cardHeader}><p style={s.cardTitle}>ℹ️ About</p></div>
-        <div style={s.cardBody}>
-          <div style={{ fontSize: 13, color: '#666', lineHeight: 1.8 }}>
-            <strong>Hybrid Training Programme</strong><br />
-            Phase 1 -- Strength and Conditioning<br />
-            Structure: Push / Pull / Legs + 2 WOD days + 2 Rest days<br /><br />
-            Athlete: 52yo · 6\'1" · 190lbs · Intermediate<br />
-            Goals: Athletic performance + lean muscle<br /><br />
-            <span style={{ color: '#AAA', fontSize: 12 }}>Training data is stored locally on this device. Weekly reviews are sent to Anthropic via your API key.</span>
+        <div style={card}>
+          <div style={head}>Build Next Phase</div>
+          <div style={body}>
+            <div style={{ fontSize: F(13), color: '#555', lineHeight: 1.7, marginBottom: 6 }}>When Phase {PHASE_NUM} is done, copy this request and paste it into Claude along with your Week 4 log.</div>
+            <PhaseBuilder />
+          </div>
+        </div>
+
+        <div style={card}>
+          <div style={head}>About</div>
+          <div style={body}>
+            <div style={{ fontSize: F(13), color: '#666', lineHeight: 1.8 }}>
+              <strong>Phase {PHASE_NUM} - {PHASE_NAME}</strong><br />
+              Push / Pull / Legs, two WOD days, two rest days. Only the strength block and WODs are logged.<br /><br />
+              Phase 1 logs from the earlier version are archived in this device's storage, not deleted.
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </ScrollArea>
   );
 }
 
@@ -126,53 +123,23 @@ function PhaseBuilder() {
   const [copied, setCopied] = useState(false);
   const generate = () => {
     const lines = [
-      '================================================',
-      'PHASE 1 COMPLETE -- BUILD PHASE 2',
-      '================================================',
-      'Athlete: 52yo, 6\'1", 190lbs, Intermediate',
-      'Goals: Athletic performance + lean muscle',
-      'Equipment: Barbell, rack, incline bench, DB, KB,',
-      '  pull-up bar, box, wallball, jump rope,',
-      '  assault bike, rower',
+      'PHASE ' + PHASE_NUM + ' COMPLETE -- BUILD PHASE ' + (PHASE_NUM + 1),
+      "Athlete: 52yo, 6'1\", 190lbs, Intermediate. Goals: athletic performance + lean muscle.",
+      'Equipment: barbell, rack, incline bench, DB, KB (35 and 53 lb), pull-up bar, box, wallball, jump rope, assault bike, rower.',
       '',
-      'Phase 1 structure (4 weeks):',
-      '  Monday: Strength -- Push (75 min)',
-      '  Tuesday: Conditioning -- WOD (60 min)',
-      '  Wednesday: Rest',
-      '  Thursday: Strength -- Pull (75 min)',
-      '  Friday: Strength -- Legs (75 min)',
-      '  Saturday: Conditioning -- WOD (60 min)',
-      '  Sunday: Rest',
+      'Phase ' + PHASE_NUM + ' structure: Mon Push, Tue WOD, Wed Rest, Thu Pull, Fri Legs, Sat WOD, Sun Rest.',
+      'Only the strength block and WODs are logged. No cool-down. Strength sessions about 70 min, WOD days up to 60 min.',
+      'Weekly pattern: Wk1 4x5, Wk2 4x4, Wk3 4x3 (heaviest), Wk4 deload 3x5 plus Chipper retest.',
       '',
-      'Weekly progression:',
-      '  Week 1: Baseline loads, RPE 6-7',
-      '  Week 2: +5lbs primary lifts',
-      '  Week 3: +1 set all Strength Block exercises',
-      '  Week 4: Deload -- sets return to baseline',
-      '',
-      'WOD categories:',
-      '  A: Short and High Burst (10-15 min)',
-      '  B: Medium and Medium Burst (20-30 min)',
-      '  C: Longer and Light Burst (35-45 min)',
-      '  Rotation: Week 1 Tue=A Sat=B, Week 2 Tue=C Sat=A, etc.',
-      '',
-      'Please design Phase 2 (next 4 weeks) that:',
-      '1. Builds on Phase 1 with appropriate progression',
-      '2. Maintains Push/Pull/Legs + 2 WOD + 2 Rest structure',
-      '3. Increases intensity and complexity appropriately',
-      '4. Is appropriate for a 52-year-old intermediate athlete',
-      '5. Keeps sessions at 75 min strength, 60 min conditioning',
-      '',
-      'NOTE: Attach your Week 4 log review for personalised',
-      'load recommendations in Phase 2.',
-      '================================================',
+      'Design Phase ' + (PHASE_NUM + 1) + ' (4 weeks) that builds on the logs I attach, keeps the same weekly structure, and fits a 52-year-old intermediate athlete.',
     ];
-    navigator.clipboard.writeText(lines.join('\n')).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); });
+    try {
+      navigator.clipboard.writeText(lines.join('\n')).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); });
+    } catch (e) { console.warn(e); }
   };
   return (
-    <div>
-      <button onClick={generate} style={{ padding: '10px 20px', background: copied ? '#0A7C4E' : '#E8500A', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontFamily: 'monospace', fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }}>{copied ? '✓ Copied' : '📋 Copy Phase 2 Request'}</button>
-      <div style={{ marginTop: 8, fontSize: 11, color: '#999', lineHeight: 1.6 }}>Paste into Claude along with your Week 4 log review.</div>
-    </div>
+    <button onClick={generate} style={{ padding: '10px 18px', background: copied ? C.green : C.orange, color: '#fff', border: 'none', borderRadius: 8, fontSize: F(13), fontFamily: MONO, fontWeight: 700 }}>
+      {copied ? 'Copied' : 'Copy Phase ' + (PHASE_NUM + 1) + ' Request'}
+    </button>
   );
 }
